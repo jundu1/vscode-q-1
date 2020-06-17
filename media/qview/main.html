@@ -19,8 +19,8 @@
         $("#qview-stats-data").css("color", "#009688");
         $("#qview-stats-data").val('Success');
         switch (message.type) {
-          case 97:
           case 98:
+          case 99:
             var table = new Tabulator("#qview-table-data", {
               clipboard: "copy",
               data: message.data,
@@ -60,11 +60,6 @@
         }
       }
     });
-
-    // $('#nab-tab a').on('click', function (e) {
-    //   e.preventDefault()
-    //   $(this).tab('show')
-    // })
 
   </script>
 </head>
@@ -113,19 +108,9 @@
   </div>
 
 
-  <!-- <div id="qview-table" class="row justify-content-start bg-light mr-0 pb-3" style="display: none;">
-    <div class="col-12">
-      <div id="buttons" class="m-0 pb-2">
-        <button id="select-all" class="btn btn-primary btn-sm">Select All</button>
-        <button id="deselect-all" class="btn btn-primary btn-sm">Deselect All</button>
-        <button id="copy-selected" class="btn btn-primary btn-sm">Copy Selected</button>
-      </div>
-      <button id="download-as-csv" class="pure-button pure-button-primary">Download as csv</button>
-      <div id="qview-table-data"></div>
-    </div>
-  </div>
-  <div id="qview-plain" class="row justify-content-start bg-light mr-0 pb-3" style="display: none;">
-    <div class="col-12"> -->
+
+      <!-- <button id="download-as-csv" class="pure-button pure-button-primary">Download as csv</button> -->
+
 
   </div>
   </div>
