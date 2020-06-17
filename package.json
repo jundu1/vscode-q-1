@@ -7,7 +7,7 @@
 	"publisher": "jshinonome",
 	"license": "MIT",
 	"engines": {
-		"vscode": "^1.45.1"
+		"vscode": "^1.46.0"
 	},
 	"categories": [
 		"Programming Languages",
@@ -29,7 +29,8 @@
 	"icon": "icon.png",
 	"main": "./out/extension",
 	"activationEvents": [
-		"*"
+		"onView:qservers",
+		"onLanguage:q"
 	],
 	"scripts": {
 		"vscode:package": "vsce package",
@@ -65,12 +66,126 @@
 				"language": "q",
 				"path": "./snippets/q.json"
 			}
+		],
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "q-server-explorer",
+					"title": "q Server Explorer",
+					"icon": "media/server.svg"
+				}
+			]
+		},
+		"views": {
+			"q-server-explorer": [
+				{
+					"id": "qservers",
+					"name": "q Servers",
+					"icon": "media/storage-24px.svg",
+					"contextualTitle": "q Servers"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "qservers.refreshEntry",
+				"title": "Refresh q Server List",
+				"category": "kdb+/q ext",
+				"icon": {
+					"light": "resources/light/refresh.svg",
+					"dark": "resources/dark/refresh.svg"
+				}
+			},
+			{
+				"command": "qservers.addEntry",
+				"title": "Add q Server",
+				"category": "kdb+/q ext",
+				"icon": {
+					"light": "resources/light/add.svg",
+					"dark": "resources/dark/add.svg"
+				}
+			},
+			{
+				"command": "qservers.editEntry",
+				"title": "Edit q Server",
+				"category": "kdb+/q ext",
+				"icon": {
+					"light": "resources/light/edit.svg",
+					"dark": "resources/dark/edit.svg"
+				}
+			},
+			{
+				"command": "qservers.deleteEntry",
+				"title": "Delete q Server",
+				"category": "kdb+/q ext",
+				"icon": {
+					"light": "resources/light/trash.svg",
+					"dark": "resources/dark/trash.svg"
+				}
+			},
+			{
+				"command": "qservers.queryCurrentLine",
+				"title": "Query current line",
+				"category": "kdb+/q ext"
+			},
+			{
+				"command": "qservers.querySelection",
+				"title": "Query current selection",
+				"category": "kdb+/q ext"
+			},
+			{
+				"command": "queryview.start",
+				"title": "Start Query Result View",
+				"category": "kdb+/q ext"
+			}
+		],
+		"menus": {
+			"view/title": [
+				{
+					"command": "qservers.refreshEntry",
+					"when": "view == qservers",
+					"group": "navigation"
+				},
+				{
+					"command": "qservers.addEntry",
+					"when": "view == qservers",
+					"group": "navigation"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "qservers.editEntry",
+					"when": "view == qservers && viewItem == qconn",
+					"group": "inline"
+				},
+				{
+					"command": "qservers.deleteEntry",
+					"when": "view == qservers && viewItem == qconn",
+					"group": "inline"
+				}
+			]
+		},
+		"keybindings": [
+			{
+				"command": "qservers.queryCurrentLine",
+				"key": "ctrl+q"
+			},
+			{
+				"command": "qservers.querySelection",
+				"key": "ctrl+r"
+			}
 		]
 	},
 	"devDependencies": {
-		"@types/vscode": "^1.45.1",
+		"@types/long": "^4.0.1",
+		"@types/node": "^14.0.13",
+		"@types/vscode": "^1.46.0",
+		"@typescript-eslint/eslint-plugin": "^3.2.0",
+		"@typescript-eslint/parser": "^3.2.0",
 		"eslint": "^7.2.0",
+		"node-q": "^2.5.0",
 		"typescript": "^3.9.5",
 		"vscode-test": "^1.4.0"
-	}
+	},
+	"dependencies": {}
 }
