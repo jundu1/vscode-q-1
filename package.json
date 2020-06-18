@@ -1,6 +1,6 @@
 {
 	"name": "vscode-q",
-	"displayName": "kdb+/q",
+	"displayName": "kdb+/q ext",
 	"description": "q language support for Visual Studio Code",
 	"version": "1.1.0",
 	"homepage": "https://github.com/jshinonome/vscode-q",
@@ -30,7 +30,14 @@
 	"main": "./out/extension",
 	"activationEvents": [
 		"onView:qservers",
-		"onLanguage:q"
+		"onLanguage:q",
+		"onCommand:qservers.refreshEntry",
+		"onCommand:qservers.addEntry",
+		"onCommand:qservers.editEntry",
+		"onCommand:qservers.deleteEntry",
+		"onCommand:qservers.queryCurrentLine",
+		"onCommand:qservers.querySelection",
+		"onCommand:queryview.start"
 	],
 	"scripts": {
 		"vscode:package": "vsce package",
