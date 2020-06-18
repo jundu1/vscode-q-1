@@ -195,5 +195,7 @@
 		"typescript": "^3.9.5",
 		"vscode-test": "^1.4.0"
 	},
-	"dependencies": {}
+	"dependencies": {
+		"node-q": "^2.5.0"
+	}
 }
