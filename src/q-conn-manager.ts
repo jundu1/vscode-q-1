@@ -20,7 +20,7 @@ export class QConnManager {
     // type: number
     // data: return
     // cols: columns of table
-    queryWrapper = '@[{r:value x;`exception`type`data`cols!(0b;t;r;$[(t:type r) in 98 99h;cols r;()])};;{`exception`data!(1b;x)}]';
+    queryWrapper = '@[{r:value x;r:$[99h<>t:type r;r;98h=type key r;0!r;enlist r];`exception`type`data`cols!(0b;t;r;$[t in 98 99h;cols r;()])};;{`exception`data!(1b;x)}]';
 
     public static create(): QConnManager {
         if (this.current) {
