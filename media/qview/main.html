@@ -10,8 +10,6 @@
   <script type="text/javascript">
     window.addEventListener('message', event => {
       const message = event.data; // The json data that the extension sent
-      console.log(message.type);
-      console.log(message.data);
       if (message.exception) {
         $("#qview-stats-data").css("color", "#F44336");
         $("#qview-stats-data").val('Exception: ' + message.data);

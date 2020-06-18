@@ -64,7 +64,7 @@ export class QueryView {
 
     public update(result: QueryResult): void {
         this._panel.title = 'Query Result';
-        console.log(result);
+        // console.log(result);
         this._panel.webview.postMessage(result);
     }
 

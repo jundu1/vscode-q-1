@@ -12,6 +12,7 @@
             "preLaunchTask": "npm: compile",
             "runtimeExecutable": "${execPath}",
             "args": [
+                "--disable-extensions",
                 "--extensionDevelopmentPath=${workspaceFolder}"
             ]
         }

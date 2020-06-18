@@ -27,7 +27,7 @@
 		"q"
 	],
 	"icon": "icon.png",
-	"main": "./out/extension",
+	"main": "./out/extension.js",
 	"activationEvents": [
 		"onView:qservers",
 		"onLanguage:q",
@@ -40,6 +40,7 @@
 		"onCommand:queryview.start"
 	],
 	"scripts": {
+		"clean": "rm -rf out",
 		"vscode:package": "vsce package",
 		"vscode:publish": "vsce publish",
 		"vscode:prepublish": "npm run compile",
