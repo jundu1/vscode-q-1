@@ -181,6 +181,5 @@ function updateModeStatus() {
 
 
 export function deactivate(): void {
-    window.showInformationMessage('Decativate vscode-q');
     QueryView.currentPanel?.dispose();
 }
