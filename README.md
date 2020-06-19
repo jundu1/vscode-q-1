@@ -5,19 +5,18 @@ This extension adds syntaxes for the q language to VS Code.
 Recommend to use theme [dracula/visual-studio-code](https://marketplace.visualstudio.com/items?itemName=dracula-theme.theme-dracula)
 See the [Changelog](https://github.com/jshinonome/vscode-q/blob/master/CHANGELOG.md) to know what has changed over the last few versions of this extension.
 
-## Screenshot
-![demo](media/demo/capture.png)
-
 ## Server Explorer
 All q servers list in the q Server Explorer, and it is easy to switch to different server.
-
-## Query View
-The query view is only optimized for querying table, and first run doesn't show table correctly. From the second run, table view should be normal. At least, you can send query to server now.
-Call `kdb+/q ext: Toggle query mode` to switch Query Console.
 
 ## Query Console(default)
 Output just like q console to output channel.
 Call `kdb+/q ext: Toggle query mode` to switch Query View.
+![query_console](media/demo/query_console.png)
+
+## Query View
+The query view is only optimized for querying table, and first run doesn't show table correctly. From the second run, table view should be normal. At least, you can send query to server now.
+Call `kdb+/q ext: Toggle query mode` to switch Query Console.
+![query_view](media/demo/query_view.png)
 
 ## Shortcuts
 - ctrl+q: query current line
