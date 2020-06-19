@@ -13,6 +13,11 @@ All q servers list in the q Server Explorer, and it is easy to switch to differe
 
 ## Query View
 The query view is only optimized for querying table, and first run doesn't show table correctly. From the second run, table view should be normal. At least, you can send query to server now.
+Call `kdb+/q ext: Toggle query mode` to switch Query Console.
+
+## Query Console(default)
+Output just like q console to output channel.
+Call `kdb+/q ext: Toggle query mode` to switch Query View.
 
 ## Shortcuts
 - ctrl+q: query current line

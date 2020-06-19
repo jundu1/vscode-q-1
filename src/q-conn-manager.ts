@@ -5,6 +5,7 @@ import { homedir } from "os";
 import * as fs from "fs";
 import { QConn } from "./q-conn";
 import { QueryView } from "./query-view";
+import { QueryConsole } from "./query-console";
 
 const cfgDir = homedir() + '/.vscode/';
 const cfgPath = cfgDir + 'q-server-cfg.json';
@@ -20,7 +21,8 @@ export class QConnManager {
     // type: number
     // data: return
     // cols: columns of table
-    queryWrapper = '@[{r:value x;r:$[99h<>t:type r;r;98h=type key r;0!r;enlist r];`exception`type`data`cols!(0b;t;r;$[t in 98 99h;cols r;()])};;{`exception`data!(1b;x)}]';
+    public static queryWrapper = "";
+    public static consoleMode = true;
 
     public static create(): QConnManager {
         if (this.current) {
@@ -32,7 +34,22 @@ export class QConnManager {
 
     private constructor() {
         this.loadCfg();
+        QConnManager.updateQueryWrapper();
     }
+
+    public static toggleMode(): void {
+        QConnManager.consoleMode = !QConnManager.consoleMode;
+        QConnManager.updateQueryWrapper();
+    }
+
+    public static updateQueryWrapper(): void {
+        if (QConnManager.consoleMode) {
+            QConnManager.queryWrapper = '{{.Q.trp[x;y;{x,"\n",.Q.sbt@(-4)_y}]}[{.Q.S[system"c";0j;value x]};x]}';
+        } else {
+            QConnManager.queryWrapper = '@[{r:value x;r:$[99h<>t:type r;r;98h=type key r;0!r;enlist r];`exception`type`data`cols!(0b;t;r;$[t in 98 99h;cols r;()])};;{`exception`data!(1b;x)}]';
+        }
+    }
+
 
     getConn(label: string): QConn | undefined {
         return this.qConnPool.get(label);
@@ -68,18 +85,30 @@ export class QConnManager {
 
     sync(query: string): void {
         if (this.activeConn) {
-            this.activeConn.k(this.queryWrapper, query,
+            this.activeConn.k(QConnManager.queryWrapper, query,
                 (err, res) => {
                     if (err) {
-                        QueryView.currentPanel?.update(
-                            {
-                                exception: true,
-                                data: err
-                            }
-                        );
+                        if (QConnManager.consoleMode) {
+                            commands.executeCommand('queryconsole.start');
+                            QueryConsole.current?.append(res);
+                        } else {
+                            commands.executeCommand('queryview.start');
+                            QueryView.currentPanel?.update(
+                                {
+                                    exception: true,
+                                    data: err
+                                }
+                            );
+                        }
                     }
                     if (res) {
-                        QueryView.currentPanel?.update(res);
+                        if (QConnManager.consoleMode) {
+                            commands.executeCommand('queryconsole.start');
+                            QueryConsole.current?.append(res);
+                        } else {
+                            commands.executeCommand('queryview.start');
+                            QueryView.currentPanel?.update(res);
+                        }
                     }
                 }
             );

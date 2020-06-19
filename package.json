@@ -142,8 +142,18 @@
 				"category": "kdb+/q ext"
 			},
 			{
+				"command": "qservers.toggleMode",
+				"title": "Toggle query mode",
+				"category": "kdb+/q ext"
+			},
+			{
 				"command": "queryview.start",
 				"title": "Start Query Result View",
+				"category": "kdb+/q ext"
+			},
+			{
+				"command": "queryconsole.start",
+				"title": "Start Query Console Output Channel",
 				"category": "kdb+/q ext"
 			}
 		],

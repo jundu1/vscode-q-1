@@ -3,12 +3,14 @@ import { QServerTreeProvider } from './q-server-tree';
 import { QConn } from './q-conn';
 import { QueryView } from './query-view';
 import { qCfgInput } from './q-cfg-input';
+import { QueryConsole } from './query-console';
+import { QConnManager } from './q-conn-manager';
 
 let connStatusBar: StatusBarItem;
+let modeStatusBar: StatusBarItem;
 
 export function activate(context: ExtensionContext): void {
 
-    console.log('q ext for vscode is on');
     // extra language configurations
     languages.setLanguageConfiguration('q', {
         onEnterRules: [
@@ -21,11 +23,19 @@ export function activate(context: ExtensionContext): void {
     });
 
     // status bar
-    connStatusBar = window.createStatusBarItem(StatusBarAlignment.Left, 100);
+    connStatusBar = window.createStatusBarItem(StatusBarAlignment.Left, 99);
     context.subscriptions.push(connStatusBar);
-    connStatusBar.text = '$(circle-slash) Disconnected';
+    connStatusBar.text = 'Disconnected';
     connStatusBar.color = '#6272A4';
     connStatusBar.show();
+
+    // status bar
+    modeStatusBar = window.createStatusBarItem(StatusBarAlignment.Left, 100);
+    context.subscriptions.push(modeStatusBar);
+    updateModeStatus();
+    modeStatusBar.show();
+
+
     commands.registerCommand(
         'qservers.updateStatusBar',
         name => updateConnStatus(name)
@@ -73,21 +83,43 @@ export function activate(context: ExtensionContext): void {
             qServers.qConnManager.connect(label);
         });
 
+    commands.registerCommand(
+        'qservers.toggleMode',
+        () => {
+            QConnManager.toggleMode();
+            if (QConnManager.consoleMode) {
+                window.showInformationMessage('Switch to Query Console Mode');
+                QueryView.currentPanel?.dispose();
+            } else {
+                window.showInformationMessage('Switch to Query View Mode');
+                QueryConsole.current?.dispose();
+            }
+            updateModeStatus();
+            updateConnStatusColor();
+        });
+
+
     context.subscriptions.push(
         commands.registerCommand('queryview.start', () => {
-            QueryView.createOrShow(context.extensionPath);
+            if (QueryView.currentPanel === undefined) {
+                QueryView.createOrShow(context.extensionPath);
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        commands.registerCommand('queryconsole.start', () => {
+            if (QueryConsole.current === undefined) {
+                QueryConsole.createOrShow();
+            }
         })
     );
 
     context.subscriptions.push(
         commands.registerCommand('qservers.queryCurrentLine', () => {
             const n = window.activeTextEditor?.selection.active.line;
-            if (QueryView.currentPanel === undefined) {
-                QueryView.createOrShow(context.extensionPath);
-            }
             if (n !== undefined) {
                 const query = window.activeTextEditor?.document.lineAt(n).text;
-                console.log(query);
                 if (query) {
                     qServers.qConnManager.sync(query);
                 }
@@ -97,9 +129,6 @@ export function activate(context: ExtensionContext): void {
 
     context.subscriptions.push(
         commands.registerCommand('qservers.querySelection', () => {
-            if (QueryView.currentPanel === undefined) {
-                QueryView.createOrShow(context.extensionPath);
-            }
             const query = window.activeTextEditor?.document.getText(
                 new Range(window.activeTextEditor.selection.start, window.activeTextEditor.selection.end)
             );
@@ -113,8 +142,7 @@ export function activate(context: ExtensionContext): void {
         // Make sure we register a serializer in activation event
         window.registerWebviewPanelSerializer(QueryView.viewType, {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            async deserializeWebviewPanel(webviewPanel: WebviewPanel, state: any) {
-                console.log(`Got state: ${state}`);
+            async deserializeWebviewPanel(webviewPanel: WebviewPanel) {
                 QueryView.revive(webviewPanel, context.extensionPath);
             }
         });
@@ -123,10 +151,36 @@ export function activate(context: ExtensionContext): void {
 }
 
 function updateConnStatus(name: string) {
-    connStatusBar.text = `$(pulse) ${name.toUpperCase()}`;
-    connStatusBar.color = '#8BE9FD';
+    if (QConnManager.consoleMode) {
+        connStatusBar.text = name.toUpperCase();
+        connStatusBar.color = '#FF79C6';
+    } else {
+        connStatusBar.text = name.toUpperCase();
+        connStatusBar.color = '#8BE9FD';
+    }
 }
+
+function updateConnStatusColor() {
+    if (QConnManager.consoleMode) {
+        connStatusBar.color = '#FF79C6';
+    } else {
+        connStatusBar.color = '#8BE9FD';
+    }
+}
+
+function updateModeStatus() {
+    if (QConnManager.consoleMode) {
+        modeStatusBar.text = '$(debug-console)';
+        modeStatusBar.color = '#FF79C6';
+    } else {
+        modeStatusBar.text = '$(graph)';
+        modeStatusBar.color = '#8BE9FD';
+    }
+}
+
+
 
 export function deactivate(): void {
     window.showInformationMessage('Decativate vscode-q');
+    QueryView.currentPanel?.dispose();
 }

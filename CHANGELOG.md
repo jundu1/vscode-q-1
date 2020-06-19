@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "vscode-q" extension will be documented in this file.
 
+## 1.3.0
+- add q query console(default)
+
 ## 1.2.0
 ### Added
 - add q server manager
