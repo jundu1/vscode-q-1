@@ -9,7 +9,7 @@ See the [Changelog](https://github.com/jshinonome/vscode-q/blob/master/CHANGELOG
 All q servers list in the q Server Explorer, and it is easy to switch to different server.
 
 ## Query Console(default)
-Output just like q console to output channel.
+Output just like q console to output channel. The console size is set to the same as q console. Use `system c rows columns` to change console size.
 Call `kdb+/q ext: Toggle query mode` to switch Query View.
 ![query_console](media/demo/query_console.png)
 
