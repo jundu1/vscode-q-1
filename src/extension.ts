@@ -59,8 +59,7 @@ export function activate(context: ExtensionContext): void {
     // status bar
     connStatusBar = window.createStatusBarItem(StatusBarAlignment.Left, 99);
     context.subscriptions.push(connStatusBar);
-    connStatusBar.text = 'Disconnected';
-    connStatusBar.color = '#6272A4';
+    updateConnStatus(undefined);
     connStatusBar.show();
 
     // status bar
@@ -184,13 +183,18 @@ export function activate(context: ExtensionContext): void {
 
 }
 
-function updateConnStatus(name: string) {
-    if (QConnManager.consoleMode) {
-        connStatusBar.text = name.toUpperCase();
-        connStatusBar.color = '#FF79C6';
+function updateConnStatus(name: string | undefined) {
+    if (name) {
+        if (QConnManager.consoleMode) {
+            connStatusBar.text = name.toUpperCase();
+            connStatusBar.color = '#FF79C6';
+        } else {
+            connStatusBar.text = name.toUpperCase();
+            connStatusBar.color = '#8BE9FD';
+        }
     } else {
-        connStatusBar.text = name.toUpperCase();
-        connStatusBar.color = '#8BE9FD';
+        connStatusBar.text = 'Disconnected';
+        connStatusBar.color = '#6272A4';
     }
 }
 
@@ -211,8 +215,6 @@ function updateModeStatus() {
         modeStatusBar.color = '#8BE9FD';
     }
 }
-
-
 
 export function deactivate(): void {
     QueryView.currentPanel?.dispose();

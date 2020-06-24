@@ -69,6 +69,13 @@ export class QConnManager {
                         (err, conn) => {
                             if (err) window.showErrorMessage(err.message);
                             if (conn) {
+                                conn.addListener("close", _hadError => {
+                                    if (_hadError) {
+                                        console.log("Error happened during closing connection");
+                                    }
+                                    // todo: remove connection, update status bar
+                                    this.removeConn(label);
+                                });
                                 qConn?.setConn(conn);
                                 this.activeConn = conn;
                                 this.activeConnLabel = label;
@@ -158,6 +165,16 @@ export class QConnManager {
 
     dumpCfg(): void {
         fs.writeFileSync(cfgPath, JSON.stringify(this.qCfg, null, 4), 'utf8');
+    }
+
+    removeConn(label: string): void {
+        const qConn = this.getConn(label);
+        qConn?.setConn(undefined);
+        if (this.activeConnLabel === label) {
+            this.activeConn = undefined;
+            commands.executeCommand('qservers.updateStatusBar', undefined);
+        }
+        window.showWarningMessage(`Lost connection to ${label.toUpperCase()}`);
     }
 }
 
