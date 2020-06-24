@@ -17,8 +17,14 @@ repository:
       - name: comment.block.eof.q
         begin: ^\\\s*$
         end: \Z
-      - name: comment.line.q
-        match: ^/.+
+      - begin: (^(/)(?:\s*)(?:(@[pr])\s+([a-zA-Z][a-zA-Z\d_]*))?(?:\s*\w*))
+        beginCaptures:
+          "1": { name: comment.line.slash.q }
+          "2": { name: punctuation.definition.comment.q }
+          "3": { name: storage.type.class.q }
+          "4": { name: variable.parameter.q }
+        end: (?=^)
+        contentName: comment.line.q
       - name: comment.line.inline.q
         match: \s/.*
   strings:
@@ -92,7 +98,7 @@ repository:
       - name: support.type.q
         match: '`(boolean|byte|short|int|long|real|float|char|symbol|timestamp|month|date|datetime|timespan|minute|second|time|year|mm|dd|hh|uu|ss)(?=\$)'
       - name: support.attribute.q
-        match: '`[supg](?=#)'
+        match: "`[supg](?=#)"
       # - name: support.cast.q
       #   match: \"[b-jmnps-vxzB-JMNPS-VXZ]\"(?=\$)
       - name: constant.other.symbol.q
@@ -113,14 +119,14 @@ repository:
       - name: keyword.control.q
         match: \$(?=\[)
       - name: keyword.assign.q
-        match: '::?'
+        match: "::?"
       - name: keyword.iterator.q
         match: (':?|\\:?|/:?)
       - name: keyword.other.DML.q
         match: \b(select|update|delete|exec|from|by|fby|where|aj|aj0|ajf|ajf0|ej|ij|ijf|lj|ljf|uj|ujf|wj|wj1|upsert|insert)\b
       - name: keyword.operator.comparison.q
         match: (=|<=?|>=?|~|<>)
-      - include: '#variables'
+      - include: "#variables"
       - name: keyword.operator.q
         match: '[\@\.\$!?+\-\*%|&#^,]'
   variables:
@@ -130,27 +136,27 @@ repository:
         match: (?<![a-zA-Z\d])\.[a-zA-Z][a-zA-Z\d_]*(\.[a-zA-Z\d_]+)*
   function:
     patterns:
-      - begin: '{'
+      - begin: "{"
         beginCaptures:
           0:
             name: punctuation.definition.function.body.begin.bracket.curly.q
-        end: '}' # TODO: illegal if first }
+        end: "}" # TODO: illegal if first }
         endCaptures:
           0:
             name: punctuation.definition.function.body.end.bracket.curly.q
         patterns:
-          - include: '#function_param'
-          - include: '#self'
-          - include: '#invalids'
+          - include: "#function_param"
+          - include: "#self"
+          - include: "#invalids"
           - name: variable.language.default.q
             match: \b(x|y|z)\b
   function_param:
     patterns:
-      - begin: '['
+      - begin: "["
         beginCaptures:
           0:
             name: punctuation.definition.parameters.begin.bracket.square.q
-        end: ']'
+        end: "]"
         endCaptures:
           0:
             name: punctuation.definition.parameters.end.bracket.square.q

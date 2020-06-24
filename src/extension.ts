@@ -1,4 +1,4 @@
-import { window, ExtensionContext, languages, IndentAction, commands, WebviewPanel, Range, StatusBarItem, StatusBarAlignment } from 'vscode';
+import { window, ExtensionContext, languages, IndentAction, commands, WebviewPanel, Range, StatusBarItem, StatusBarAlignment, TextDocument, TextEdit } from 'vscode';
 import { QServerTreeProvider } from './q-server-tree';
 import { QConn } from './q-conn';
 import { QueryView } from './query-view';
@@ -16,10 +16,44 @@ export function activate(context: ExtensionContext): void {
         onEnterRules: [
             {
                 // eslint-disable-next-line no-useless-escape
-                beforeText: /^[\(\[{]/,
-                action: { indentAction: IndentAction.None, appendText: '\n ' }
+                beforeText: /^(?!\s+).*[\(\[{].*$/,
+                afterText: /^[)}\]]/,
+                action: {
+                    indentAction: IndentAction.None,
+                    appendText: '\n '
+                }
+            },
+            {
+                // eslint-disable-next-line no-useless-escape
+                beforeText: /^\s[)}\]];?$/,
+                action: {
+                    indentAction: IndentAction.Outdent
+                }
+            },
+            {
+                // eslint-disable-next-line no-useless-escape
+                beforeText: /^\/.*$/,
+                action: {
+                    indentAction: IndentAction.None,
+                    appendText: '/ '
+                }
             }
         ]
+    });
+
+    // append space to start [,(,{
+    languages.registerDocumentFormattingEditProvider('q', {
+        provideDocumentFormattingEdits(document: TextDocument): TextEdit[] {
+            const textEdit: TextEdit[] = [];
+            for (let i = 0; i < document.lineCount; i++) {
+                const line = document.lineAt(i);
+                if (line.text.match('^[)\\]}]')) {
+                    textEdit.push(TextEdit.insert(line.range.start, ' '));
+                }
+
+            }
+            return textEdit;
+        }
     });
 
     // status bar
