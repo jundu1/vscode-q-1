@@ -20,6 +20,10 @@ The query view is only optimized for querying table, and first run doesn't show 
 Call `kdb+/q ext: Toggle query mode` to switch Query Console.
 ![query_view](media/demo/query_view.png)
 
+## Highlight Comment
+Highlight `@p,@r` in comments, p stands for param, r stands for return.
+![highlight_comment.png](media/demo/highlight_comment.png)
+
 ## Shortcuts
 - ctrl+q: query current line
 - ctrl+r: query selected line(s)

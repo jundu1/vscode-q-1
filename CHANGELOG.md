@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to the "vscode-q" extension will be documented in this file.
 
+## 1.3.1
+### Added
+- show warning for lost connection
+- highlight @p, @r in comments
+- auto append space to close brackets at beginning of line
+
 ## 1.3.0
 - add q query console(default)
 
