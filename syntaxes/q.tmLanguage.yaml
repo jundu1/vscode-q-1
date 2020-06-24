@@ -6,7 +6,7 @@ patterns:
   - include: "#strings"
   - include: "#constants"
   - include: "#keywords"
-  # - include: "#function"
+  - include: "#function"
   - include: "#invalids"
 repository:
   comments:
@@ -19,10 +19,10 @@ repository:
         end: \Z
       - begin: (^(/)(?:\s*)(?:(@[pr])\s+([a-zA-Z][a-zA-Z\d_]*))?(?:\s*\w*))
         beginCaptures:
-          "1": { name: comment.line.slash.q }
-          "2": { name: punctuation.definition.comment.q }
-          "3": { name: storage.type.class.q }
-          "4": { name: variable.parameter.q }
+          1: { name: comment.line.slash.q }
+          2: { name: punctuation.definition.comment.q }
+          3: { name: storage.type.class.q }
+          4: { name: variable.parameter.q }
         end: (?=^)
         contentName: comment.line.q
       - name: comment.line.inline.q
@@ -31,12 +31,10 @@ repository:
     patterns:
       - begin: '"'
         beginCaptures:
-          0:
-            name: punctuation.definition.string.begin.q
+          0: { name: punctuation.definition.string.begin.q }
         end: '"'
         endCaptures:
-          0:
-            name: punctuation.definition.string.end.q
+          0: { name: punctuation.definition.string.end.q }
         name: string.quoted.double.q
         patterns:
           - name: constant.character.escape.q
@@ -138,29 +136,31 @@ repository:
     patterns:
       - begin: "{"
         beginCaptures:
-          0:
-            name: punctuation.definition.function.body.begin.bracket.curly.q
-        end: "}" # TODO: illegal if first }
+          0: { name: punctuation.definition.function.body.begin.q }
+        end: "}"
         endCaptures:
-          0:
-            name: punctuation.definition.function.body.end.bracket.curly.q
+          0: { name: punctuation.definition.function.body.end.q }
         patterns:
           - include: "#function_param"
-          - include: "#self"
+          - include: "#comments"
+          - include: "#strings"
+          - include: "#constants"
+          - include: "#keywords"
           - include: "#invalids"
+          - include: "#self"
           - name: variable.language.default.q
             match: \b(x|y|z)\b
   function_param:
     patterns:
-      - begin: "["
+      - name: meta.parameters.q
+        begin: (?<={)\[
         beginCaptures:
-          0:
-            name: punctuation.definition.parameters.begin.bracket.square.q
+          0: { name: punctuation.definition.parameters.begin.q }
         end: "]"
         endCaptures:
-          0:
-            name: punctuation.definition.parameters.end.bracket.square.q
-        name: meta.parameters.q
+          0: { name: punctuation.definition.parameters.end.q }
         patterns:
-          - name: entity.name.variable.parameter
-            match: \b(?<!\.)[a-zA-Z][a-zA-Z\d\._]*
+          - name: variable.parameter.q
+            match: \b[a-zA-Z][a-zA-Z\d_]*
+          - name: punctuation.separator.parameter.q
+            match: ";"
