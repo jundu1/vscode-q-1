@@ -15,6 +15,9 @@
       "include": "#keywords"
     },
     {
+      "include": "#function"
+    },
+    {
       "include": "#invalids"
     }
   ],
@@ -242,13 +245,13 @@
           "begin": "{",
           "beginCaptures": {
             "0": {
-              "name": "punctuation.definition.function.body.begin.bracket.curly.q"
+              "name": "punctuation.definition.function.body.begin.q"
             }
           },
           "end": "}",
           "endCaptures": {
             "0": {
-              "name": "punctuation.definition.function.body.end.bracket.curly.q"
+              "name": "punctuation.definition.function.body.end.q"
             }
           },
           "patterns": [
@@ -256,10 +259,22 @@
               "include": "#function_param"
             },
             {
-              "include": "#self"
+              "include": "#comments"
+            },
+            {
+              "include": "#strings"
+            },
+            {
+              "include": "#constants"
+            },
+            {
+              "include": "#keywords"
             },
             {
               "include": "#invalids"
+            },
+            {
+              "include": "#function"
             },
             {
               "name": "variable.language.default.q",
@@ -272,23 +287,27 @@
     "function_param": {
       "patterns": [
         {
-          "begin": "[",
+          "name": "meta.parameters.q",
+          "begin": "(?<={)\\[",
           "beginCaptures": {
             "0": {
-              "name": "punctuation.definition.parameters.begin.bracket.square.q"
+              "name": "punctuation.definition.parameters.begin.q"
             }
           },
           "end": "]",
           "endCaptures": {
             "0": {
-              "name": "punctuation.definition.parameters.end.bracket.square.q"
+              "name": "punctuation.definition.parameters.end.q"
             }
           },
-          "name": "meta.parameters.q",
           "patterns": [
             {
-              "name": "entity.name.variable.parameter",
-              "match": "\\b(?<!\\.)[a-zA-Z][a-zA-Z\\d\\._]*"
+              "name": "variable.parameter.q",
+              "match": "\\b[a-zA-Z][a-zA-Z\\d_]*"
+            },
+            {
+              "name": "punctuation.separator.parameter.q",
+              "match": ";"
             }
           ]
         }

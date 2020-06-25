@@ -11,7 +11,7 @@ See the [Changelog](https://github.com/jshinonome/vscode-q/blob/master/CHANGELOG
 All q servers list in the q Server Explorer, and it is easy to switch to different server.
 
 ## Query Console(default)
-Output just like q console to output channel. The console size is set to the same as q console. Use `system c rows columns` to change console size.
+Output just like q console to output channel. The console size is set to the same as q console. Use `system "c rows columns"` to change console size.
 Call `kdb+/q ext: Toggle query mode` to switch Query View.
 ![query_console](media/demo/query_console.png)
 
@@ -20,9 +20,16 @@ The query view is only optimized for querying table, and first run doesn't show 
 Call `kdb+/q ext: Toggle query mode` to switch Query Console.
 ![query_view](media/demo/query_view.png)
 
-## Highlight Comment
+## Highlight Comments
 Highlight `@p,@r` in comments, p stands for param, r stands for return.
 ![highlight_comment.png](media/demo/highlight_comment.png)
+
+## Semantic Highlight
+Highlight parameters for functions. There shouldn't be any space between `{` and `[`.
+![semantic_highlight.png](media/demo/semantic_highlight.png)
+
+## Formatter
+Append space to `},],)` by formatting the file. Turn on `Editor: Format On Save` to automatically append space.
 
 ## Shortcuts
 - ctrl+q: query current line
