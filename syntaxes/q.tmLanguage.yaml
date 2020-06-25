@@ -147,7 +147,7 @@ repository:
           - include: "#constants"
           - include: "#keywords"
           - include: "#invalids"
-          - include: "#self"
+          - include: "#function"
           - name: variable.language.default.q
             match: \b(x|y|z)\b
   function_param:

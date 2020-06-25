@@ -5,6 +5,7 @@ import { QueryView } from './query-view';
 import { qCfgInput } from './q-cfg-input';
 import { QueryConsole } from './query-console';
 import { QConnManager } from './q-conn-manager';
+import { semanticTokensProvider } from './q-semantic-token';
 
 let connStatusBar: StatusBarItem;
 let modeStatusBar: StatusBarItem;
@@ -180,6 +181,8 @@ export function activate(context: ExtensionContext): void {
             }
         });
     }
+
+    context.subscriptions.push(semanticTokensProvider);
 
 }
 
