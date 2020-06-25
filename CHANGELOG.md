@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "vscode-q" extension will be documented in this file.
 
+## 1.3.2
+### Added
+- semantic parameter highlight
+
 ## 1.3.1
 ### Added
 - show warning for lost connection

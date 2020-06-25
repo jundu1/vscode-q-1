@@ -136,7 +136,7 @@ export async function qCfgInput(qcfg: QCfg | undefined, requireUnique = true): P
 
     async function validateUnique(label: string) {
         if (requireUnique) {
-            return QConnManager.current?.qConnPool.has('label') ? 'Label exists' : undefined;
+            return QConnManager.current?.qConnPool.has(label) ? 'Label exists' : undefined;
         } else {
             return undefined;
         }

@@ -1,5 +1,4 @@
 import { SemanticTokensLegend, TextDocument, CancellationToken, SemanticTokens, languages, SemanticTokensBuilder, Position } from 'vscode';
-import { off } from 'process';
 
 const tokenTypes = new Map<string, number>();
 const tokenModifiers = new Map<string, number>();
@@ -141,13 +140,6 @@ class DocumentSemanticTokensProvider implements DocumentSemanticTokensProvider {
         });
     }
 
-    private _parseTextToken(text: string): { tokenType: string; tokenModifiers: string[]; } {
-        const parts = text.split('.');
-        return {
-            tokenType: parts[0],
-            tokenModifiers: parts.slice(1)
-        };
-    }
 }
 
 export const semanticTokensProvider = languages.registerDocumentSemanticTokensProvider({ language: 'q' },
