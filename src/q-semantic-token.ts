@@ -74,6 +74,9 @@ class DocumentSemanticTokensProvider implements DocumentSemanticTokensProvider {
 
     // start from next char of '{'
     private _parseParameter(p: Position, lines: string[], ipt: IParsedToken[]): Position {
+        if (lines[p.line][p.character] === '}') {
+            return new Position(p.line, p.character + 1);
+        }
         let params: string[] = [];
         let startPos = p;
 
@@ -121,13 +124,18 @@ class DocumentSemanticTokensProvider implements DocumentSemanticTokensProvider {
 
     private _matchParamters(i: number, start: number, end: number, line: string, ipt: IParsedToken[], params: string[]) {
         params.forEach(p => {
-            if (p === '') {
+            if (p === '' || line.indexOf('/') == 0) {
                 return;
             }
             const regex = new RegExp('\\b' + p + '\\b', 'g');
+            const commentStart = line.indexOf(' /', start);
+            if (commentStart == 0) {
+                return;
+            }
+            end = commentStart > 0 ? commentStart : end;
             let match;
             while ((match = regex.exec(line)) != null) {
-                if (match.index > start && match.index <= end) {
+                if (match.index >= start && match.index <= end) {
                     ipt.push({
                         line: i,
                         startCharacter: match.index,

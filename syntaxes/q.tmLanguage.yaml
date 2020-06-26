@@ -16,7 +16,7 @@ repository:
         end: ^\\\s*$
       - name: comment.block.eof.q
         begin: ^\\\s*$
-        end: \Z
+        end: \z
       - begin: (^(/)(?:\s*)(?:(@[pr])\s+([a-zA-Z][a-zA-Z\d_]*))?(?:\s*\w*))
         beginCaptures:
           1: { name: comment.line.slash.q }
