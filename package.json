@@ -27,7 +27,7 @@
 		"q"
 	],
 	"icon": "icon.png",
-	"main": "./out/extension.js",
+	"main": "./out/q-ext.js",
 	"activationEvents": [
 		"onView:qservers",
 		"onLanguage:q",

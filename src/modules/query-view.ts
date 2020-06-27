@@ -1,6 +1,6 @@
 import { WebviewPanel, Disposable, window, ViewColumn, Uri } from 'vscode';
 import path = require('path');
-import { QueryResult } from './query-result';
+import { QueryResult } from '../models/query-result';
 import * as fs from 'fs';
 
 const templatePath = './media/qview';
