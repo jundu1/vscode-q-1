@@ -22,7 +22,7 @@ interface IParsedToken {
 }
 
 class DocumentSemanticTokensProvider implements DocumentSemanticTokensProvider {
-    async provideDocumentSemanticTokens(document: TextDocument, token: CancellationToken): Promise<SemanticTokens> {
+    async provideDocumentSemanticTokens(document: TextDocument, _token: CancellationToken): Promise<SemanticTokens> {
         const allTokens = this._parseText(document.getText());
         const builder = new SemanticTokensBuilder();
         allTokens.forEach((token) => {

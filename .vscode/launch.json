@@ -6,7 +6,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Extension",
+            "name": "Launch Extension",
             "type": "extensionHost",
             "request": "launch",
             "preLaunchTask": "npm: compile",
@@ -14,9 +14,28 @@
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}"
             ]
-        }
+        },
+        {
+            "type": "node",
+            "request": "attach",
+            "name": "Attach to Language Server",
+            "port": 6009,
+            "restart": true,
+            "outFiles": [
+                "${workspaceRoot}/out/server/**/*.js"
+            ]
+        },
     ],
     "exclude": [
         "local"
+    ],
+    "compounds": [
+        {
+            "name": "Client + Server",
+            "configurations": [
+                "Launch Extension",
+                "Attach to Language Server"
+            ]
+        }
     ]
 }
