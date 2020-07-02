@@ -56,10 +56,24 @@ export function activate(context: ExtensionContext): void {
             const textEdit: TextEdit[] = [];
             for (let i = 0; i < document.lineCount; i++) {
                 const line = document.lineAt(i);
+                if (line.isEmptyOrWhitespace) {
+                    continue;
+                }
+                // automatically insert semicolon
+                // todo: add support for block comments
+                if (i < document.lineCount - 1
+                    && !/;$/.test(line.text)
+                    && !/^[\\/]/.test(line.text)
+                    && !/\s\//.test(line.text)
+                ) {
+                    if (document.lineAt(i + 1).text.charAt(0) !== ' ') {
+                        textEdit.push(TextEdit.insert(line.range.end, ';'));
+                    }
+                }
+
                 if (line.text.match('^[)\\]}]')) {
                     textEdit.push(TextEdit.insert(line.range.start, ' '));
                 }
-
             }
             return textEdit;
         }
