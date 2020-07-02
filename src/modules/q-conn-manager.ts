@@ -92,6 +92,10 @@ export class QConnManager {
 
     sync(query: string): void {
         if (this.activeConn) {
+            if (query.slice(-1) === ';') {
+                query = query.slice(0, -1);
+            }
+
             this.activeConn.k(QConnManager.queryWrapper, query,
                 (err, res) => {
                     if (err) {
