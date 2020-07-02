@@ -13,6 +13,8 @@ export class QConn extends TreeItem {
     socketTimeout: number;
     conn?: q.Connection;
     command?: Command;
+    // kdb+ version
+    version = 3.5;
     constructor(cfg: QCfg) {
         super(cfg['label'], TreeItemCollapsibleState.None);
         this.host = ('host' in cfg) ? cfg['host'] : 'localhost';
@@ -34,6 +36,12 @@ export class QConn extends TreeItem {
 
     setConn(conn: q.Connection | undefined): void {
         this.conn = conn;
+        conn?.k('.z.K', (err, res) => {
+            if (err)
+                console.log('Cannot retrieve kdb+ version');
+            if (res)
+                this.version = res;
+        });
     }
 
     get tooltip(): string {

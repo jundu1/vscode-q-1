@@ -15,8 +15,7 @@ export class QConnManager {
     qConnPool = new Map<string, QConn>();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     qCfg: QCfg[] = [];
-    activeConn: q.Connection | undefined;
-    activeConnLabel: string | undefined;
+    activeConn: QConn | undefined;
     // exception: true|false
     // type: number
     // data: return
@@ -34,19 +33,23 @@ export class QConnManager {
 
     private constructor() {
         this.loadCfg();
-        QConnManager.updateQueryWrapper();
     }
 
     public static toggleMode(): void {
         QConnManager.consoleMode = !QConnManager.consoleMode;
-        QConnManager.updateQueryWrapper();
     }
 
-    public static updateQueryWrapper(): void {
+    public getQueryWrapper(): string {
         if (QConnManager.consoleMode) {
-            QConnManager.queryWrapper = '{{.Q.trp[x;y;{x,"\n",.Q.sbt@(-4)_y}]}[{.Q.S[system"c";0j;value x]};x]}';
+            if (this.activeConn && this.activeConn.version < 3.5) {
+                // Earlier kdb+ ver, -105! is not available
+                return '{.Q.S[system"c";0j;value x]}';
+            } else {
+                // >= kdb+ ver 3.5 2017.03.15
+                return '{{-105!(x;enlist y;{x,"\n",.Q.sbt@(-3)_y})}[{.Q.S[system"c";0j;value x]};x]}';
+            }
         } else {
-            QConnManager.queryWrapper = '@[{r:value x;r:$[99h<>t:type r;r;98h=type key r;0!r;enlist r];`exception`type`data`cols!(0b;t;r;$[t in 98 99h;cols r;()])};;{`exception`data!(1b;x)}]';
+            return '@[{r:value x;r:$[99h<>t:type r;r;98h=type key r;0!r;enlist r];`exception`type`data`cols!(0b;t;r;$[t in 98 99h;cols r;()])};;{`exception`data!(1b;x)}]';
         }
     }
 
@@ -61,8 +64,7 @@ export class QConnManager {
             if (qConn) {
                 const conn = qConn.conn;
                 if (conn) {
-                    this.activeConn = conn;
-                    this.activeConnLabel = label;
+                    this.activeConn = qConn;
                     commands.executeCommand('qservers.updateStatusBar', label);
                 } else {
                     q.connect(qConn,
@@ -77,8 +79,7 @@ export class QConnManager {
                                     this.removeConn(label);
                                 });
                                 qConn?.setConn(conn);
-                                this.activeConn = conn;
-                                this.activeConnLabel = label;
+                                this.activeConn = qConn;
                                 commands.executeCommand('qservers.updateStatusBar', label);
                             }
                         }
@@ -95,8 +96,8 @@ export class QConnManager {
             if (query.slice(-1) === ';') {
                 query = query.slice(0, -1);
             }
-
-            this.activeConn.k(QConnManager.queryWrapper, query,
+            const queryWrapper = this.getQueryWrapper();
+            this.activeConn?.conn?.k(queryWrapper, query,
                 (err, res) => {
                     if (err) {
                         if (QConnManager.consoleMode) {
@@ -174,7 +175,7 @@ export class QConnManager {
     removeConn(label: string): void {
         const qConn = this.getConn(label);
         qConn?.setConn(undefined);
-        if (this.activeConnLabel === label) {
+        if (this.activeConn?.label === label) {
             this.activeConn = undefined;
             commands.executeCommand('qservers.updateStatusBar', undefined);
         }

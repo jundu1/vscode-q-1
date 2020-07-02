@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to the "vscode-q" extension will be documented in this file.
 
+## 1.4.0
+### Added
+- fix issue when query kdb+ version < 3.5, earlier version doesn't have .Q.trp yet
+- add q language server, hope to add code jump soon.
+- auto insert semicolon ';'
+
 ## 1.3.2
 ### Added
 - semantic parameter highlight
