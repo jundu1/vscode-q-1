@@ -7,9 +7,9 @@ This extension adds syntaxes for the q language to VS Code.
 Recommend to use theme [dracula/visual-studio-code](https://marketplace.visualstudio.com/items?itemName=dracula-theme.theme-dracula)
 See the [Changelog](https://github.com/jshinonome/vscode-q/blob/master/CHANGELOG.md).
 
-[Submit a issue](https://github.com/jshinonome/vscode-q/issues).
+[Submit an issue](https://github.com/jshinonome/vscode-q/issues).
 
-## Server Explorer
+## Server Explorers
 All q servers list in the q Server Explorer, and it is easy to switch to different server.
 
 ## Query Console(default)
