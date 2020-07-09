@@ -104,6 +104,9 @@ export async function qCfgInput(qcfg: QCfg | undefined, requireUnique = true): P
     }
 
     async function inputLabel(input: QCfgInput, state: QCfg) {
+        if (state.label === '') {
+            state.label = state.host + '-' + state.port;
+        }
         state.label = await input.showInputBox({
             title,
             step: 7,
