@@ -1,149 +1,112 @@
 import {
-    createConnection, TextDocuments, Diagnostic, DiagnosticSeverity, ProposedFeatures,
-    InitializeParams, DidChangeConfigurationNotification, CompletionItem, CompletionItemKind,
-    TextDocumentPositionParams, TextDocumentSyncKind, InitializeResult
+    TextDocuments, Diagnostic, DiagnosticSeverity, Location, Hover,
+    InitializeParams, CompletionItem, TextDocumentPositionParams, TextDocumentSyncKind, InitializeResult, IConnection, Connection, ReferenceParams, ServerCapabilities
 } from 'vscode-languageserver';
 
 import {
     TextDocument
 } from 'vscode-languageserver-textdocument';
+import getBuildInFsRef from './q-build-in-fs';
+import { initializeParser } from './q-parser';
+import QAnalyzer, { word } from './q-analyser';
 
-// Create a connection for the server, using Node's IPC as a transport.
-// Also include all preview / proposed LSP features.
-const connection = createConnection(ProposedFeatures.all);
 
-// Create a simple text document manager.
-const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
+export default class QLangServer {
+    connection: IConnection;
+    // Create a simple text document manager. The text document manager
+    // supports full document sync only
+    documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
-let hasConfigurationCapability = false;
-let hasWorkspaceFolderCapability = false;
-let hasDiagnosticRelatedInformationCapability = false;
+    buildInFsRef: CompletionItem[] = [];
 
-connection.onInitialize((params: InitializeParams) => {
-    const capabilities = params.capabilities;
+    private analyzer: QAnalyzer;
 
-    // Does the client support the `workspace/configuration` request?
-    // If not, we fall back using global settings.
-    hasConfigurationCapability = !!(
-        capabilities.workspace && !!capabilities.workspace.configuration
-    );
-    hasWorkspaceFolderCapability = !!(
-        capabilities.workspace && !!capabilities.workspace.workspaceFolders
-    );
-    hasDiagnosticRelatedInformationCapability = !!(
-        capabilities.textDocument &&
-        capabilities.textDocument.publishDiagnostics &&
-        capabilities.textDocument.publishDiagnostics.relatedInformation
-    );
+    private constructor(connection: IConnection, analyzer: QAnalyzer) {
+        this.connection = connection;
+        this.analyzer = analyzer;
+        this.buildInFsRef = getBuildInFsRef();
+        // Make the text document manager listen on the connection
+        // for open, change and close text document events
+        this.documents.listen(this.connection);
 
-    const result: InitializeResult = {
-        capabilities: {
-            textDocumentSync: TextDocumentSyncKind.Incremental,
-            // Tell the client that this server supports code completion.
+        this.documents.onDidChangeContent(this.onDidChangeContent.bind(this));
+
+        this.connection.onHover(this.onHover.bind(this))
+        this.connection.onDidChangeWatchedFiles(this.onDidChangeWatchedFiles.bind(this));
+        // this.connection.onDocumentSymbol(this.onDocumentSymbol.bind(this));
+        // this.connection.onDefinition(this.definitionProvider.handler);
+        this.connection.onCompletion(this.onCompletion.bind(this));
+        this.connection.onDefinition(this.onDefinition.bind(this));
+    }
+
+    public static async initialize(
+        connection: Connection,
+        { rootPath }: InitializeParams,
+    ): Promise<QLangServer> {
+        console.log(`Initializing q Lang Server at ${rootPath}`);
+        const parser = await initializeParser()
+        return QAnalyzer.fromRoot(connection, rootPath, parser).then(
+            analyzer => { return new QLangServer(connection, analyzer) }
+        )
+    }
+
+
+    public capabilities(): ServerCapabilities {
+        return {
+            // For now we're using full-sync even though tree-sitter has great support
+            // for partial updates.
+            textDocumentSync: TextDocumentSyncKind.Full,
             completionProvider: {
-                resolveProvider: true
-            }
-        }
-    };
-    if (hasWorkspaceFolderCapability) {
-        result.capabilities.workspace = {
-            workspaceFolders: {
-                supported: true
-            }
-        };
-    }
-    return result;
-});
-
-connection.onInitialized(() => {
-    if (hasConfigurationCapability) {
-        // Register for all configuration changes.
-        connection.client.register(DidChangeConfigurationNotification.type, undefined);
-    }
-    if (hasWorkspaceFolderCapability) {
-        connection.workspace.onDidChangeWorkspaceFolders(_event => {
-            connection.console.log('Workspace folder change event received.');
-        });
-    }
-});
-
-// The example settings
-interface QLangServerConf {
-    maxNumberOfProblems: number;
-}
-
-// The global settings, used when the `workspace/configuration` request is not supported by the client.
-// Please note that this is not the case when using this server with the client provided in this example
-// but could happen with other clients.
-const defaultSettings: QLangServerConf = { maxNumberOfProblems: 1000 };
-let globalSettings: QLangServerConf = defaultSettings;
-
-// Cache the settings of all open documents
-const documentSettings: Map<string, Thenable<QLangServerConf>> = new Map();
-
-connection.onDidChangeConfiguration(change => {
-    if (hasConfigurationCapability) {
-        // Reset all cached document settings
-        documentSettings.clear();
-    } else {
-        globalSettings = <QLangServerConf>(
-            (change.settings.qLangServer || defaultSettings)
-        );
-    }
-
-    // Revalidate all open text documents
-    documents.all().forEach(validateTextDocument);
-});
-
-function getDocumentSettings(resource: string): Thenable<QLangServerConf> {
-    if (!hasConfigurationCapability) {
-        return Promise.resolve(globalSettings);
-    }
-    let result = documentSettings.get(resource);
-    if (!result) {
-        result = connection.workspace.getConfiguration({
-            scopeUri: resource,
-            section: 'qLangServer'
-        });
-        documentSettings.set(resource, result);
-    }
-    return result;
-}
-
-// Only keep settings for open documents
-documents.onDidClose(e => {
-    documentSettings.delete(e.document.uri);
-});
-
-// The content of a text document has changed. This event is emitted
-// when the text document first opened or when its content has changed.
-documents.onDidChangeContent(change => {
-    validateTextDocument(change.document);
-});
-
-async function validateTextDocument(textDocument: TextDocument): Promise<void> {
-    // In this simple example we get the settings for every validate run.
-    const settings = await getDocumentSettings(textDocument.uri);
-
-    // The validator creates diagnostics for all uppercase words length 2 and more
-    const text = textDocument.getText();
-    const pattern = /^[}\])]/gm;
-    let m: RegExpExecArray | null;
-
-    let problems = 0;
-    const diagnostics: Diagnostic[] = [];
-    while ((m = pattern.exec(text)) && problems < settings.maxNumberOfProblems) {
-        problems++;
-        const diagnostic: Diagnostic = {
-            severity: DiagnosticSeverity.Error,
-            range: {
-                start: textDocument.positionAt(m.index),
-                end: textDocument.positionAt(m.index + m[0].length)
+                resolveProvider: true,
             },
-            message: `require a space before ${m[0]}`,
-            source: 'q-lang-server'
-        };
-        if (hasDiagnosticRelatedInformationCapability) {
+            hoverProvider: true,
+            documentHighlightProvider: true,
+            definitionProvider: true,
+            documentSymbolProvider: true,
+            workspaceSymbolProvider: true,
+            referencesProvider: true,
+        }
+    }
+
+    private onDidChangeContent(change: any) {
+        this.analyzer.analyze(change.document.uri, change.document)
+        this.validateTextDocument(change.document);
+    }
+
+    private onDidChangeWatchedFiles() {
+        // here be dragons
+        this.connection.console.log('We received an file change event');
+    }
+
+    private onCompletion(_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] {
+        return this.buildInFsRef;
+    }
+
+    private onDefinition(_textDocumentPosition: TextDocumentPositionParams): Location[] {
+        console.log(_textDocumentPosition.textDocument)
+        console.log(_textDocumentPosition.position)
+        return []
+    }
+
+    private validateTextDocument(textDocument: TextDocument): void {
+
+        const text = textDocument.getText();
+        const pattern = /^[}\])]/gm;
+        let m: RegExpExecArray | null;
+
+        let problems = 0;
+        const diagnostics: Diagnostic[] = [];
+        while (m = pattern.exec(text)) {
+            problems++;
+            const diagnostic: Diagnostic = {
+                severity: DiagnosticSeverity.Error,
+                range: {
+                    start: textDocument.positionAt(m.index),
+                    end: textDocument.positionAt(m.index + m[0].length)
+                },
+                message: `require a space before ${m[0]}`,
+                source: 'q-lang-server'
+            };
             diagnostic.relatedInformation = [
                 {
                     location: {
@@ -153,58 +116,66 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
                     message: 'Multiline expressions'
                 }
             ];
+            diagnostics.push(diagnostic);
         }
-        diagnostics.push(diagnostic);
+
+        // Send the computed diagnostics to VSCode.
+        this.connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
     }
 
-    // Send the computed diagnostics to VSCode.
-    connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+    private async onHover(params: TextDocumentPositionParams): Promise<Hover | null> {
+        const word = this.getWordAtPoint(params);
+        const currentUri = params.textDocument.uri;
+
+        this.logRequest('onHover', params, word)
+
+        if (!word) {
+            return null
+        }
+
+        let ref = this.buildInFsRef.filter(item => item.label === word.text)[0]
+
+        if (ref) {
+            return { contents: [ref.detail!] }
+        }
+
+        // let symbols: SymbolInformation[] = [];
+        // symbols = this.analyzer.findSymbolsForFile(currentUri);
+        // symbols = symbols.filter(
+        //     sym =>
+        //         sym.containerName === word.containerName && sym.location.range.start.line !== params.position.line)
+        // if (word.containerName==='') {
+        //     symbols.concat(
+        //         this.analyzer.findSymbolsMatchingWord(true, word.text)
+        //         .filter(sym=>sym.location.range.start.line!==params.position.line)
+        //         );
+        // }
+
+        // if (symbols.length === 1) {
+        //     return { contents: symbols[0] }
+        // }
+
+        return null
+    }
+
+    private getWordAtPoint(
+        params: ReferenceParams | TextDocumentPositionParams,
+    ): word | null {
+        return this.analyzer.wordAtPoint(
+            params.textDocument.uri,
+            params.position.line,
+            params.position.character,
+        )
+    }
+
+    private logRequest(
+        request: string,
+        params: ReferenceParams | TextDocumentPositionParams,
+        word?: word | null
+    ) {
+        const wordLog = word ? JSON.stringify(word) : 'null'
+        this.connection.console.log(
+            `${request} ${params.position.line}:${params.position.character} word=${wordLog}`,
+        )
+    }
 }
-
-connection.onDidChangeWatchedFiles(_change => {
-    // Monitored files have change in VSCode
-    connection.console.log('We received an file change event');
-});
-
-// This handler provides the initial list of the completion items.
-connection.onCompletion(
-    (_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-        // The pass parameter contains the position of the text document in
-        // which code complete got requested. For the example we ignore this
-        // info and always provide the same completion items.
-        return [
-            {
-                label: 'TypeScript',
-                kind: CompletionItemKind.Text,
-                data: 1
-            },
-            {
-                label: 'JavaScript',
-                kind: CompletionItemKind.Text,
-                data: 2
-            }
-        ];
-    }
-);
-
-// This handler resolves additional information for the item selected in
-// the completion list.
-connection.onCompletionResolve(
-    (item: CompletionItem): CompletionItem => {
-        if (item.data === 1) {
-            item.detail = 'TypeScript details';
-            item.documentation = 'TypeScript documentation';
-        } else if (item.data === 2) {
-            item.detail = 'JavaScript details';
-            item.documentation = 'JavaScript documentation';
-        }
-        return item;
-    }
-);
-
-// Make the text document manager listen on the connection
-// for open, change and close text document events
-documents.listen(connection);
-
-// Listen on the connection
-connection.listen();

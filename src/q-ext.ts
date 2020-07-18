@@ -206,7 +206,7 @@ export function activate(context: ExtensionContext): void {
 
     context.subscriptions.push(semanticTokensProvider);
 
-    const qls = path.join(context.extensionPath, 'out', 'server', 'q-lang-server.js');
+    const qls = path.join(context.extensionPath, 'out', 'server', 'start-server.js');
 
     // The debug options for the server
     // runs the server in Node's Inspector mode for debugging
