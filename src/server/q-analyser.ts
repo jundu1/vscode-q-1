@@ -88,11 +88,19 @@ export default class QAnalyzer {
     /**
      * Find all the definition locations
      */
-    public findDefinition(name: string): Location[] {
-        const symbols: SymbolInformation[] = []
-        this.uriToDefinition.forEach(nameToSymInfo => {
-            symbols.concat(nameToSymInfo.get(name) || [])
-        })
+    public findDefinition(word: word, uri: string): Location[] {
+        let symbols: SymbolInformation[] = []
+
+        if (word.type === 'global_identifier' || word.containerName === '') {
+            this.uriToDefinition.forEach(nameToSymInfo => {
+                symbols = symbols.concat(nameToSymInfo.get(word.text) || [])
+            })
+        } else {
+            // limited to current file, current function
+            symbols = this.uriToDefinition.get(uri)?.get(word.text)?.filter(
+                sym => sym.containerName === word.containerName
+            ) ?? []
+        }
         return symbols.map(s => s.location)
     }
 
@@ -109,10 +117,68 @@ export default class QAnalyzer {
     /**
      * Find all the reference locations
      */
-    public findReferences(name: string): Location[] {
-        const locations: Location[] = [];
-        this.uriToTree.forEach((_, uri) => locations.concat(this.findOccurrences(uri, name)));
-        return locations.flat();
+    public findReferences(word: word, uri: string): Location[] {
+        let locations: Location[] = [];
+
+        if (word.type === 'global_identifier' || word.containerName === '') {
+            // find in all files
+            this.uriToTree.forEach((_, u) => locations = locations.concat(this.findSynNodeLocations(u, word)));
+        } else {
+            // find in current file
+            locations = this.findSynNodeLocations(uri, word)
+        }
+        return locations
+
+    }
+
+
+    /**
+     * Find all syntax nodes of name in the given file.
+     */
+    public findSynNodes(uri: string, word: word): Parser.SyntaxNode[] {
+        const tree = this.uriToTree.get(uri)
+        const content = this.uriToFileContent.get(uri)
+        const synNodes: Parser.SyntaxNode[] = []
+
+        if (tree && content) {
+            TreeSitterUtil.forEach(tree.rootNode, n => {
+                let node: Parser.SyntaxNode | null = null;
+                if (TreeSitterUtil.isReference(n)) {
+                    node = n.firstNamedChild || n
+                } else if (TreeSitterUtil.isDefinition(n)) {
+                    node = n.firstNamedChild
+                }
+
+                if (node?.text.trim() === word.text) {
+                    synNodes.push(node)
+                }
+            })
+        }
+
+        if (word.type === 'global_identifier' || word.containerName === '') {
+            return synNodes
+        } else {
+            return synNodes.filter(syn => this.getContainerName(syn) === word.containerName)
+        }
+    }
+
+    public findSynNodeLocations(uri: string, word: word): Location[] {
+        const synNodes = this.findSynNodes(uri, word)
+        return synNodes.map(syn => Location.create(uri, TreeSitterUtil.range(syn)))
+    }
+
+
+    public findSynNodeByType(uri: string, type: string): Parser.SyntaxNode[] {
+        const tree = this.uriToTree.get(uri)
+        const synNodes: Parser.SyntaxNode[] = []
+        if (tree) {
+            TreeSitterUtil.forEach(tree.rootNode, n => {
+                if (n.type === type) {
+                    synNodes.push(n)
+                }
+            })
+        }
+        return synNodes
     }
 
     /**
@@ -164,13 +230,13 @@ export default class QAnalyzer {
         exactMatch: boolean,
         word: string,
     ): SymbolInformation[] {
-        const symbols: SymbolInformation[] = []
+        let symbols: SymbolInformation[] = []
 
         this.uriToDefinition.forEach((nameToSymInfo) => {
             nameToSymInfo.forEach((syms, name) => {
                 const match = exactMatch ? name === word : name.startsWith(word)
                 if (match) {
-                    symbols.concat(syms);
+                    symbols = symbols.concat(syms);
                 }
             })
         })
@@ -210,12 +276,12 @@ export default class QAnalyzer {
                 if (named === null) {
                     return
                 }
-                const name = content.slice(named.startIndex, named.endIndex)
-                const declarations = this.uriToDefinition.get(uri)?.get(name) || []
+                const name = named.text.trim()
+                const definitions = this.uriToDefinition.get(uri)!.get(name) || []
 
                 const containerName = this.getContainerName(n) ?? '';
 
-                declarations.push(
+                definitions.push(
                     SymbolInformation.create(
                         name,
                         // only variable, may change to function/variable later
@@ -226,7 +292,7 @@ export default class QAnalyzer {
                     ),
                 )
 
-                this.uriToDefinition.get(uri)!.set(name, declarations);
+                this.uriToDefinition.get(uri)!.set(name, definitions);
             }
         })
 
@@ -249,6 +315,13 @@ export default class QAnalyzer {
         return problems
     }
 
+    public remove(uri: string): void {
+        this.uriToTextDocument.delete(uri);
+        this.uriToTree.delete(uri);
+        this.uriToDefinition.delete(uri);
+        this.uriToFileContent.delete(uri);
+    }
+
     /**
      * find its container, basically the function name
      * @param n
@@ -265,7 +338,7 @@ export default class QAnalyzer {
                     return functionNamed.text.trim();
                 }
             } else {
-                return 'LAMBDA'
+                return 'LAMBDA-' + body.parent.startPosition.row;
             }
         }
         return '';
@@ -299,9 +372,9 @@ export default class QAnalyzer {
     }
 
     private getAllSymbols(): SymbolInformation[] {
-        const symbols: SymbolInformation[] = []
+        let symbols: SymbolInformation[] = []
         this.uriToDefinition.forEach((nameToSymInfo) => {
-            nameToSymInfo.forEach((sym) => symbols.concat(sym));
+            nameToSymInfo.forEach((sym) => symbols = symbols.concat(sym));
         })
         return symbols
     }

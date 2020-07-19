@@ -11,7 +11,6 @@ export default function getBuildInFsRef() {
     fs.createReadStream(csvPath)
         .pipe(csvParser())
         .on('data', (data: CompletionItem) => {
-            data.insertText = data.label.slice(1);
             buildInFs.push(data);
         })
         .on('end', () => {

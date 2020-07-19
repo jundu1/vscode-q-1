@@ -1,15 +1,14 @@
 import {
     TextDocuments, Diagnostic, DiagnosticSeverity, Location, Hover,
-    InitializeParams, CompletionItem, TextDocumentPositionParams, TextDocumentSyncKind, InitializeResult, IConnection, Connection, ReferenceParams, ServerCapabilities
+    InitializeParams, CompletionItem, TextDocumentPositionParams, TextDocumentSyncKind, InitializeResult, IConnection, Connection, ReferenceParams, ServerCapabilities, WorkspaceSymbolParams, SymbolInformation, DocumentHighlight, DocumentSymbolParams, DidChangeWatchedFilesParams, FileChangeType
 } from 'vscode-languageserver';
-
+import * as fs from 'fs';
 import {
     TextDocument
 } from 'vscode-languageserver-textdocument';
 import getBuildInFsRef from './q-build-in-fs';
 import { initializeParser } from './q-parser';
 import QAnalyzer, { word } from './q-analyser';
-
 
 export default class QLangServer {
     connection: IConnection;
@@ -32,11 +31,14 @@ export default class QLangServer {
         this.documents.onDidChangeContent(this.onDidChangeContent.bind(this));
 
         this.connection.onHover(this.onHover.bind(this))
-        this.connection.onDidChangeWatchedFiles(this.onDidChangeWatchedFiles.bind(this));
-        // this.connection.onDocumentSymbol(this.onDocumentSymbol.bind(this));
-        // this.connection.onDefinition(this.definitionProvider.handler);
-        this.connection.onCompletion(this.onCompletion.bind(this));
         this.connection.onDefinition(this.onDefinition.bind(this));
+        this.connection.onWorkspaceSymbol(this.onWorkspaceSymbol.bind(this))
+        this.connection.onDidChangeWatchedFiles(this.onDidChangeWatchedFiles.bind(this));
+        this.connection.onDocumentHighlight(this.onDocumentHighlight.bind(this))
+        this.connection.onReferences(this.onReferences.bind(this))
+        this.connection.onDocumentSymbol(this.onDocumentSymbol.bind(this));
+        this.connection.onCompletion(this.onCompletion.bind(this));
+        this.connection.onCompletionResolve(this.onCompletionResolve.bind(this))
     }
 
     public static async initialize(
@@ -53,8 +55,6 @@ export default class QLangServer {
 
     public capabilities(): ServerCapabilities {
         return {
-            // For now we're using full-sync even though tree-sitter has great support
-            // for partial updates.
             textDocumentSync: TextDocumentSyncKind.Full,
             completionProvider: {
                 resolveProvider: true,
@@ -68,24 +68,111 @@ export default class QLangServer {
         }
     }
 
+    // todo - when add more rules, extract to a package
     private onDidChangeContent(change: any) {
         this.analyzer.analyze(change.document.uri, change.document)
         this.validateTextDocument(change.document);
     }
 
-    private onDidChangeWatchedFiles() {
-        // here be dragons
-        this.connection.console.log('We received an file change event');
+    private onDidChangeWatchedFiles(change: DidChangeWatchedFilesParams) {
+        this.connection.console.log('Received file change event(s)');
+        change.changes.forEach(event => {
+            if (/.*\/src\/.*\.q/.test(event.uri)) {
+                if (event.type === FileChangeType.Deleted) {
+                    this.analyzer.remove(event.uri)
+                } else {
+                    const fileContent = fs.readFileSync(event.uri, 'utf8')
+                    this.analyzer.analyze(event.uri, TextDocument.create(event.uri, 'q', 1, fileContent))
+                }
+
+            }
+        })
     }
 
-    private onCompletion(_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] {
-        return this.buildInFsRef;
+    // todo: symbol, local_identifier, global_identifier
+    private onCompletion(params: TextDocumentPositionParams): CompletionItem[] {
+        const word = this.getWordAtPoint({
+            ...params,
+            position: {
+                line: params.position.line,
+                // Go one character back to get completion on the current word
+                character: Math.max(params.position.character - 1, 0),
+            },
+        })
+
+        let symbols: string[] = [];
+        let localId: string[] = [];
+        let globalId: string[] = [];
+        let completionItem: CompletionItem[] = [];
+        // console.log(word?.text)
+
+        if (word?.text.startsWith('.')) {
+            completionItem = this.buildInFsRef.filter(item => item.label.startsWith(word.text));
+            globalId = this.analyzer
+                .getAllVariableSymbols().map(sym => sym.name).filter(id => id.startsWith('.'));
+            new Set(globalId).forEach(id => completionItem.push(CompletionItem.create(id)))
+            // } else if (word?.text.startsWith('`')) {
+            //     symbols = this.analyzer
+            //         .findSynNodeByType(params.textDocument.uri, 'constant_symbol').map(n => n.text.trim()).filter(s => s.startsWith(word.text))
+            //     new Set(symbols).forEach(id => completionItem.push(CompletionItem.create(id)))
+        } else {
+            completionItem = this.buildInFsRef.filter(item => !item.label.startsWith('.'));
+            localId = this.analyzer
+                .findSynNodeByType(params.textDocument.uri, 'local_identifer').map(n => n.text.trim());
+            new Set(localId).forEach(id => completionItem.push(CompletionItem.create(id)))
+        }
+        // console.log(completionItem)s
+        return completionItem;
     }
 
-    private onDefinition(_textDocumentPosition: TextDocumentPositionParams): Location[] {
-        console.log(_textDocumentPosition.textDocument)
-        console.log(_textDocumentPosition.position)
-        return []
+    private async onCompletionResolve(
+        item: CompletionItem,
+    ): Promise<CompletionItem> {
+        if (item.label.startsWith('.') || item.label.startsWith('`')) {
+            item.insertText = item.label.slice(1);
+        }
+        return item
+    }
+
+
+    private onDefinition(params: TextDocumentPositionParams): Location[] {
+        const word = this.getWordAtPoint(params)
+        // this.logRequest('onDefinition', params, word);
+        if (!word) {
+            return []
+        }
+        return this.analyzer.findDefinition(word, params.textDocument.uri)
+    }
+
+    private onWorkspaceSymbol(params: WorkspaceSymbolParams): SymbolInformation[] {
+        return this.analyzer.search(params.query)
+    }
+
+    private onDocumentHighlight(
+        params: TextDocumentPositionParams,
+    ): DocumentHighlight[] | null {
+        const word = this.getWordAtPoint(params)
+        // this.logRequest('onDocumentHighlight', params, word)
+        if (!word) {
+            return []
+        }
+        return this.analyzer.findSynNodeLocations(params.textDocument.uri, word)
+            .map(syn => { return { range: syn.range } })
+    }
+
+    private onReferences(params: ReferenceParams): Location[] | null {
+        const word = this.getWordAtPoint(params)
+        // this.logRequest('onReferences', params, word)
+        if (!word) {
+            return null
+        }
+        return this.analyzer.findReferences(word, params.textDocument.uri)
+    }
+
+    // todo: limit to global and null container
+    private onDocumentSymbol(params: DocumentSymbolParams): SymbolInformation[] {
+        // this.connection.console.log(`onDocumentSymbol`)
+        return this.analyzer.findSymbolsForFile(params.textDocument.uri)
     }
 
     private validateTextDocument(textDocument: TextDocument): void {
@@ -127,7 +214,7 @@ export default class QLangServer {
         const word = this.getWordAtPoint(params);
         const currentUri = params.textDocument.uri;
 
-        this.logRequest('onHover', params, word)
+        // this.logRequest('onHover', params, word)
 
         if (!word) {
             return null
