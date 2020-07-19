@@ -127,7 +127,7 @@ class DocumentSemanticTokensProvider implements DocumentSemanticTokensProvider {
             if (p === '' || line.indexOf('/') == 0) {
                 return;
             }
-            const regex = new RegExp('\\b' + p + '\\b', 'g');
+            const regex = new RegExp('\\b(?<![`._])' + p + '\\b', 'g');
             const commentStart = line.indexOf(' /', start);
             if (commentStart == 0) {
                 return;

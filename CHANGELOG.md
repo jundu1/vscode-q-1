@@ -1,6 +1,20 @@
 # Change Log
 All notable changes to the "vscode-q" extension will be documented in this file.
 
+## 1.5.0
+### Added
+- Go to Definition
+- Go to Reference
+- Workspace Symbol
+- Document Highlight
+- Document Symbol
+- Completion(include all global namespace varaibles in src folder)
+- Completion Resolve
+
+### Changed
+- set default conn lable
+- change minor issues with semantic parameter highlight
+
 ## 1.4.0
 ### Added
 - fix issue when query kdb+ version < 3.5, earlier version doesn't have .Q.trp yet

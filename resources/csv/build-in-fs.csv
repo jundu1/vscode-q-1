@@ -1,0 +1,173 @@
+label,detail,kind
+.Q.a,lowercase alphabet,3
+.Q.A,uppercase alphabet,3
+.Q.addmonths,add months to date,3
+.Q.bt,backtrace,3
+.Q.dd,join symbols,3
+.Q.def,provide defaults for .Q.opt,3
+.Q.f,format,3
+.Q.fc,parallel on cut,3
+.Q.ff,append columns,3
+.Q.fmt,format,3
+.Q.ft,apply simple,3
+.Q.fu,apply unique,3
+.Q.gc,garbage collect,3
+.Q.id,sanitize,3
+.Q.qt,is table,3
+.Q.res,keywords,3
+.Q.s,plain text,3
+.Q.s1,string representation,3
+.Q.sbt,string backtrace,3
+.Q.sha1,SHA-1 encode,3
+.Q.trp,extend trap,3
+.Q.ts,time and space,3
+.Q.u,date based,3
+.Q.V,table to dict,3
+.Q.v,value,3
+.Q.view,subview,3
+.Q.k,version,3
+.Q.opt,command parameters,3
+.Q.w,memory stats,3
+.Q.x,non-command parameters,3
+.Q.addr,IP address,3
+.Q.fps,streaming algorithm,3
+.Q.fs,streaming algorithm,3
+.Q.fsn,streaming algorithm,3
+.Q.hg,HTTP get,3
+.Q.host,hostname,3
+.Q.hp,HTTP post,3
+.Q.l,load,3
+.Q.Cf,create empty nested char file,3
+.Q.Xf,create file,3
+.Q.btoa,b64 encode,3
+.Q.j10,encode binhex,3
+.Q.j12,encode base64,3
+.Q.M,long infinity,3
+.Q.ty,type,3
+.Q.x10,decode binhex,3
+.Q.x12,decode base64,3
+.Q.chk,fill HDB,3
+.Q.dpft,save table,3
+.Q.dpfts,save table with sym,3
+.Q.dsftg,load process save,3
+.Q.en,enumerate varchar cols,3
+.Q.ens,enumerate against domain,3
+.Q.fk,foreign key,3
+.Q.hdpf,save tables,3
+.Q.qt,is table,3
+.Q.qp,is partitioned,3
+.Q.bv,build vp,3
+.Q.cn,count partitioned table,3
+.Q.D,partitions,3
+.Q.ind,partitioned index,3
+.Q.MAP,maps partitions,3
+.Q.par,locate partition,3
+.Q.PD,partition locations,3
+.Q.pd,modified partition locns,3
+.Q.pf,partition field,3
+.Q.pn,partition counts,3
+.Q.qp,is partitioned,3
+.Q.pt,partitioned tables,3
+.Q.PV,partition values,3
+.Q.pv,modified partition values,3
+.Q.vp,missing partitions,3
+.Q.D,partitions,3
+.Q.P,segments,3
+.Q.u,date based,3
+.z.ac,HTTP auth from cookie,3
+.z.bm,msg validator,3
+.z.exit,action on exit,3
+.z.pc,close,3
+.z.pd,peach handles,3
+.z.pg,get,3
+.z.ph,HTTP get,3
+.z.pi,input,3
+.z.po,open,3
+.z.pp,HTTP post,3
+.z.pq,qcon,3
+.z.ps,set,3
+.z.pw,validate user,3
+.z.ts,timer,3
+.z.vs,value set,3
+.z.wc,WebSocket close,3
+.z.wo,WebSocket open,3
+.z.ws,WebSockets,3
+.z.a,IP address,6
+.z.b,dependencies,6
+.z.c,cores,6
+.z.D,local date,6
+.z.d,UTC date,6
+.z.e,TLS connection status,6
+.z.ex,failed primitive,6
+.z.ey,arg to failed primitive,6
+.z.f,file,6
+.z.h,host,6
+.z.i,PID,6
+.z.K,version,6
+.z.k,release date,6
+.z.l,license,6
+.z.N,local timespan,6
+.z.n,UTC timespan,6
+.z.o,OS version,6
+.z.P,local timestamp,6
+.z.p,UTC timestamp,6
+.z.pm,HTTP options,6
+.z.q,quiet mode,6
+.z.s,self,6
+.z.T,local time,6
+.z.t,UTC time,6
+.z.u,user ID,6
+.z.W,handles,6
+.z.w,handle,6
+.z.X,raw command line,6
+.z.x,parsed command line,6
+.z.Z,local datetime,6
+.z.z,UTC datetime,6
+.z.zd,zip defaults,6
+.h.br,linebreak,3
+.h.code,code after Tab,3
+.h.fram,frame,3
+.h.ha,anchor,3
+.h.hb,anchor target,3
+.h.ht,Marqdown to HTML,3
+.h.hta,start tag,3
+.h.htac,element,3
+.h.htc,element,3
+.h.html,document,3
+.h.http,hyperlinks,3
+.h.nbr,no break,3
+.h.pre,pre,3
+.h.text,paragraphs,3
+.h.xmp,XMP,3
+.h.he,HTTP 400,3
+.h.hn,HTTP response,3
+.h.hp,HTTP response pre,3
+.h.hy,HTTP response content,3
+.h.hu,URI escape,3
+.h.hug,URI map,3
+.h.sc,URI-safe,3
+.h.uh,URI unescape,3
+.h.cd,CSV from data,3
+.h.d,delimiter,3
+.h.ed,Excel from data,3
+.h.edsn,Excel from tables,3
+.h.hc,escape lt,3
+.h.hr,horizontal rule,3
+.h.iso8601 ISO timestamp,3
+.h.jx,table,3
+.h.td,TSV from data,3
+.h.tx,filetypes,3
+.h.xd,XML,3
+.h.xs,XML escape,3
+.h.xt,JSON,3
+.h.c0,web color,3
+.h.c1,web color,3
+.h.HOME,webserver root,3
+.h.logo,Kx logo,3
+.h.sa,anchor style,3
+.h.sb,body style,3
+.h.ty,MIME types,3
+.h.val,value,3
+.j.j,serialize,3
+.j.k,deserialize,3
+.j.jd,serialize infinity,3
