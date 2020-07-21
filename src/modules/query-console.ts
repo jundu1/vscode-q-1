@@ -1,4 +1,5 @@
 import { OutputChannel, window, Disposable } from 'vscode';
+import { time } from 'console';
 
 export class QueryConsole {
     public static current: QueryConsole | undefined;
@@ -32,7 +33,8 @@ export class QueryConsole {
     }
 
     public append(output: string | string[]): void {
-        this._console.appendLine('<--- ---- cut ---- --->');
+        const date = new Date()
+        this._console.appendLine(`<=== ${date.toLocaleTimeString()} ===>`);
         if (Array.isArray(output)) {
             output.forEach(o => this._console.appendLine(o));
         } else {

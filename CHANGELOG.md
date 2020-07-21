@@ -8,11 +8,11 @@ All notable changes to the "vscode-q" extension will be documented in this file.
 - Workspace Symbol
 - Document Highlight
 - Document Symbol
-- Completion(include all global namespace varaibles in src folder)
+- Completion(include all global namespace variables in src folder)
 - Completion Resolve
 
 ### Changed
-- set default conn lable
+- set default conn label
 - change minor issues with semantic parameter highlight
 
 ## 1.4.0

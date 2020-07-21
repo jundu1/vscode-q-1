@@ -5,8 +5,10 @@
 
 This extension adds syntaxes and provides a language server for the q language.
 The language server uses tree-sitter for analyzing source codes. Tree-sitter-q is not perfect yet, so I keep it to myself.
-Recommend to use theme [dracula/visual-studio-code](https://marketplace.visualstudio.com/items?itemName=dracula-theme.theme-dracula)
+Recommend to use theme [dracula/visual-studio-code](https://marketplace.visualstudio.com/items?itemName=dracula-theme.theme-dracula).
+
 See the [Changelog](https://github.com/jshinonome/vscode-q/blob/master/CHANGELOG.md).
+
 [Submit an issue](https://github.com/jshinonome/vscode-q/issues).
 
 ## q Language Server(local server, no connection to the internet)
@@ -53,12 +55,12 @@ Thanks to the following packages that makes this happen.
 - [Bootstrap](https://getbootstrap.com/)
 - [Tabulator](http://tabulator.info/)
 - [jQuery](https://jquery.com/)
+- [tree-sitter](https://github.com/tree-sitter/tree-sitter)
 
 ## Reference
 I referred to the following repos when I created this extension.
 - https://github.com/simongarland/vim
 - https://github.com/quintanar401/language-kdb-q
-- https://github.com/tree-sitter/tree-sitter
 - https://github.com/tree-sitter/tree-sitter-javascript
 - https://github.com/bash-lsp/bash-language-server
 
