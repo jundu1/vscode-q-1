@@ -9,6 +9,7 @@ import * as TreeSitterUtil from './util/tree-sitter'
 import walkSync = require('walk-sync');
 import { DocumentUri } from 'vscode-languageserver-textdocument'
 import path = require('path');
+import { Readable } from 'stream';
 
 type nameToSymbolInfo = Map<string, SymbolInformation[]>;
 export type word = {
@@ -40,7 +41,8 @@ export default class QAnalyzer {
 
             const qSrcFiles = walkSync(rootPath, {
                 directories: false,
-                globs: [globPattern]
+                globs: [globPattern],
+                ignore: ['**/build', '**/node_modules']
             });
 
             if (qSrcFiles.length == 0) {

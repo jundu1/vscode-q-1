@@ -1,6 +1,6 @@
 import {
     TextDocuments, Diagnostic, DiagnosticSeverity, Location, Hover,
-    InitializeParams, CompletionItem, TextDocumentPositionParams, TextDocumentSyncKind, InitializeResult, IConnection, Connection, ReferenceParams, ServerCapabilities, WorkspaceSymbolParams, SymbolInformation, DocumentHighlight, DocumentSymbolParams, DidChangeWatchedFilesParams, FileChangeType
+    InitializeParams, CompletionItem, TextDocumentPositionParams, TextDocumentSyncKind, InitializeResult, IConnection, Connection, ReferenceParams, ServerCapabilities, WorkspaceSymbolParams, SymbolInformation, DocumentHighlight, DocumentSymbolParams, DidChangeWatchedFilesParams, FileChangeType, MarkupKind, MarkupContent
 } from 'vscode-languageserver';
 import * as fs from 'fs';
 import {
@@ -223,7 +223,11 @@ export default class QLangServer {
         let ref = this.buildInFsRef.filter(item => item.label === word.text)[0]
 
         if (ref) {
-            return { contents: [ref.detail!] }
+            const markupContent: MarkupContent = {
+                kind: MarkupKind.PlainText,
+                value: [ref.detail!, ref.documentation!].join('\n')
+            }
+            return { contents: markupContent }
         }
 
         // let symbols: SymbolInformation[] = [];
